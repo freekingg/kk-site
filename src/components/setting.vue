@@ -3,7 +3,7 @@ import axios from "axios";
 import { ref, reactive, onMounted } from "vue";
 import { ElMessage } from "element-plus";
 const win: any = window;
-defineProps<{ msg: string, chromePath: string }>();
+defineProps<{ msg: string; chromePath: string }>();
 
 const count = ref(0);
 
@@ -11,14 +11,14 @@ const formInline = reactive({
   path: "",
 });
 
-onMounted(() => {
+onMounted(async () => {
   win.electronAPI.onSelectDir((c: any, value: string) => {
     formInline.path = value;
-    win.electronAPI.storeSetItem({ key:'chromePath',value });
+    win.electronAPI.storeSetItem({ key: "chromePath", value });
   });
-  const chromePath = win.electronAPI.storeGetItem('chromePath');
-  if(chromePath){
-    formInline.path = chromePath;
+  const chromeDir = await win.electronAPI.dbFindOne({ name: "chromePath" });
+  if (chromeDir) {
+    formInline.path = chromeDir.value;
   }
 });
 
@@ -33,9 +33,16 @@ const onSubmit = () => {
     ElMessage.error("请输入浏览器路径.");
     return;
   }
-  console.log('formInline.path',formInline.path);
-  win.electronAPI.storeSetItem({ key:'chromePath', value: formInline.path });
-  ElMessage.success("保存成功.");
+  win.electronAPI
+    .dbUpdateOne({ name: "chromePath" },{ name: "chromePath", value: formInline.path })
+    .then((result: any) => {
+      console.log("dbUpdateOne: ", result);
+      ElMessage.success("保存成功.");
+    })
+    .catch((err: any) => {
+      console.log("dbUpdateOne: ", err);
+      ElMessage.error("保存失败.");
+    });
 };
 </script>
 
@@ -56,9 +63,9 @@ const onSubmit = () => {
     </el-form-item>
   </el-form>
   <p class="box">
-    1、打开chrome 浏览器 <br>
-    2、输入 chrome://version/  <br>
-    3、把 可执行文件路径 复制到此处保存 <br>
+    1、打开chrome 浏览器 <br />
+    2、输入 chrome://version/ <br />
+    3、把 可执行文件路径 复制到此处保存 <br />
   </p>
 </template>
 

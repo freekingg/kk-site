@@ -13,7 +13,9 @@ const auth = async (ctx) => {
   const { url, account, chromePath } = body;
   const browser = await puppeteer.launch({
     headless: false,
-    executablePath: chromePath || '"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"',
+    executablePath:
+      chromePath ||
+      '"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"',
     args: [
       "--disable-gpu",
       "--disable-dev-shm-usage",
@@ -36,26 +38,39 @@ const auth = async (ctx) => {
     width: 1920,
     height: 700,
   });
-  await page.goto(url, { timeout: 0 });
+  await page.goto(url, { timeout: 0, waitUntil:'networkidle2' });
+
+  await page.evaluate((account) => {
+    document.title = account;
+    return Promise.resolve();
+  }, account);
 
   // 最长等10分钟
   // await page.waitForFunction("window.location.pathname == '/pay/history'", { timeout: 1000 * 60 *10 })
-  await page.waitForFunction("window.location.pathname == '/pay/history'", { timeout: 0 })
-  console.log('已经登陆成功')
+  await page.waitForFunction("window.location.pathname == '/pay/history'", {
+    timeout: 0,
+  });
+  await page.evaluate((account) => {
+    document.title = account;
+    return Promise.resolve();
+  }, account);
+  console.log("已经登陆成功");
   const cookies = await page.cookies();
-  console.log('获取cookie: ', cookies);
-  setTimeout(()=>{
+  setTimeout(() => {
     browser.close()
-  },5000)
+  }, 15000);
+  console.log("获取cookie: ", cookies);
   ctx.body = { cookies: cookies, account };
 };
 
 const records = async (ctx) => {
   const body = ctx.request.body;
-  const { url , cookie, chromePath } = body;
+  const { url, cookie, chromePath } = body;
   const browser = await puppeteer.launch({
     headless: false,
-    executablePath: chromePath || "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    executablePath:
+      chromePath ||
+      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
     args: [
       "--disable-gpu",
       "--disable-dev-shm-usage",
@@ -78,18 +93,16 @@ const records = async (ctx) => {
     width: 1920,
     height: 700,
   });
-  await page.goto(url, { timeout: 0 });
-  // /pay/history
-  // await page.waitForFunction("window.location.pathname == '/Books/b/'", { timeout: 1000 * 60 *10 })
-  
+  await page.goto(url, { timeout: 0, waitUntil:'networkidle2' });
   await page.setCookie(...cookie);
 
   // 刷新页面，验证登录状态
-  await page.reload({ waitUntil: 'networkidle2' });
+  await page.reload({ waitUntil: "networkidle2" });
+  await page.goto(url, { timeout: 0, waitUntil:'networkidle2' });
+  console.log("已经登陆成功");
 
-  console.log('已经登陆成功')
   const cookies = await page.cookies();
-  console.log('获取cookie: ', cookies);
+  console.log("获取cookie: ", cookies);
   ctx.body = { cookies: cookies };
 };
 

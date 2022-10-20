@@ -16,6 +16,7 @@ import { app, BrowserWindow, shell, ipcMain,dialog } from 'electron'
 import { release } from 'os'
 import { join } from 'path'
 import { ChildProcess, fork } from 'child_process'
+import DB from './db'
 
 
 
@@ -80,6 +81,7 @@ async function createWindow() {
   })
 
   // Test actively push message to the Electron-Renderer
+  // 事件监听
   ipcMain.on('open-directory', async (event, arg) => {
     dialog.showOpenDialog({
       properties: [arg],
@@ -89,6 +91,28 @@ async function createWindow() {
       event.sender.send('selectedDir', result.filePaths[0])
   })
   })
+
+  ipcMain.handle('db:findAll', async (event, query) => {
+    let result = await DB.findAll(query)
+    return result
+  })
+
+  ipcMain.handle('db:findOne', async (event, query) => {
+    let result = await DB.findOne(query)
+    return result
+  })
+
+  ipcMain.handle('db:insert', async (event, query) => {
+    let result = await DB.insert(query)
+    return result
+  })
+
+  ipcMain.handle('db:updateOne', async (event, query, data) => {
+    let result = await DB.updateOne(query, data)
+    return result
+  })
+
+
 
   // Make all links open with the browser, not with the application
   win.webContents.setWindowOpenHandler(({ url }) => {

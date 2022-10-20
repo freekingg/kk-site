@@ -1,7 +1,18 @@
-const { contextBridge,ipcRenderer } = require('electron')
-const Store = require('electron-store')
+const { contextBridge,ipcRenderer,app } = require('electron')
 
+contextBridge.exposeInMainWorld('electronAPI', {
+  ipcRenderer: ipcRenderer,
+  openDirectory: (title) => ipcRenderer.send('open-directory', title),
+  onSelectDir: (callback) => ipcRenderer.on('selectedDir', callback),
+  storeSetItem: (data) => {},
+  storeGetItem: (key) => {},
+  dbFindOne: (query:any) => ipcRenderer.invoke('db:findOne',query),
+  dbFindAll: (query:any) => ipcRenderer.invoke('db:findAll',query),
+  dbInsert: (query:any) => ipcRenderer.invoke('db:insert',query),
+  dbUpdateOne: (query:any,data:any) => ipcRenderer.invoke('db:updateOne',query,data),
 
+  
+})
 
 function domReady(condition: DocumentReadyState[] = ['complete', 'interactive']) {
   return new Promise(resolve => {
@@ -90,15 +101,7 @@ function useLoading() {
 const { appendLoading, removeLoading } = useLoading()
 domReady().then(appendLoading)
 
-const store = new Store();
 
-contextBridge.exposeInMainWorld('electronAPI', {
-  ipcRenderer: ipcRenderer,
-  openDirectory: (title) => ipcRenderer.send('open-directory', title),
-  onSelectDir: (callback) => ipcRenderer.on('selectedDir', callback),
-  storeSetItem: (data) => store.set(data.key, data.value),
-  storeGetItem: (key) => store.get(key),
-})
 
 window.onmessage = ev => {
   ev.data.payload === 'removeLoading' && removeLoading()

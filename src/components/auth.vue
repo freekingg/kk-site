@@ -38,19 +38,18 @@ const formInline = reactive({
 const tableData: any = ref([]);
 const loading = ref(false);
 
-const onSubmit = () => {
+const onSubmit = async () => {
   if (!formInline.account) {
     ElMessage.error("请输入账号.");
     return;
   }
-  const chromeDir = win.electronAPI.storeGetItem("chromePath");
-    if (chromeDir) {
-      chromePath.value = chromeDir;
-    }else{
-      ElMessage.error('请在设置中配置浏览器路径');
-      return
-    }
-
+  const chromeDir = await win.electronAPI.dbFindOne({ name: "chromePath" });
+  if (chromeDir) {
+    chromePath.value = chromeDir.value;
+  } else {
+    ElMessage.error("请在设置中配置浏览器路径");
+    return;
+  }
   tableData.value.push({ account: formInline.account, status: 0 });
   let params = JSON.parse(
     JSON.stringify({ account: formInline.account, status: 1 })

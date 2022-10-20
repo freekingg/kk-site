@@ -3,13 +3,22 @@ import { ref, reactive, onMounted } from "vue";
 import Auth from "./components/auth.vue";
 import Records from "./components/records.vue";
 import Setting from "./components/setting.vue";
+import Help from "./components/help.vue";
 const win: any = window;
-const chromePath = ref('');
+const chromePath = ref("");
 onMounted(() => {
-  const chromeDir = win.electronAPI.storeGetItem('chromePath');
-  if(chromeDir){
+  const chromeDir = win.electronAPI.storeGetItem("chromePath");
+  if (chromeDir) {
     chromePath.value = chromeDir;
   }
+  win.electronAPI
+    .dbFindAll({})
+    .then((result: any) => {
+      console.log("db: ", result);
+    })
+    .catch((err: any) => {
+      console.log("err: ", err);
+    });
 });
 </script>
 
@@ -33,7 +42,9 @@ onMounted(() => {
       </div>
       <Setting :chromePath="chromePath" msg="配置" />
     </el-tab-pane>
-    <el-tab-pane label="日志">Task</el-tab-pane>
+    <el-tab-pane label="帮助">
+      <Help msg="配置" />
+    </el-tab-pane>
   </el-tabs>
 </template>
 

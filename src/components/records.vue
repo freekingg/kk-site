@@ -16,10 +16,14 @@ const getInfo = () => {
       },
     })
       .then((result) => {
-        console.log("result: ", result);
         if (result.data) {
           if (result.data.code == 0) {
-            resolve(result.data.data);
+            if(result.data.data){
+              resolve(result.data.data);
+            }else{
+              ElMessage.error(`此帐号还未验证，请先去验证`);
+              reject();
+            }
           } else {
             ElMessage.error(`${formInline.account} ${result.data.msg}`);
             reject();
@@ -27,7 +31,9 @@ const getInfo = () => {
         }
       })
       .catch((err) => {
-        // ElMessage.error(`${params.account} 同步失败.`);
+        console.log("err: ", err);
+        ElMessage.error("接口出错");
+        reject();
       });
   });
 };
@@ -193,7 +199,7 @@ const authHandle = (cookie: any) => {
   })
     .then((result) => {
       console.log("result: ", result);
-      loading.value = true;
+      loading.value = false;
     })
     .catch((err) => {
       console.log("err: ", err);
@@ -205,18 +211,16 @@ const formInline = reactive({
   account: "",
   website: "amazon",
 });
-
-const tableData: any = ref([]);
 const loading = ref(false);
 
-const onSubmit = () => {
+const onSubmit = async () => {
   if (!formInline.account) {
     ElMessage.error("请输入账号.");
     return;
   }
-  const chromeDir = win.electronAPI.storeGetItem("chromePath");
+  const chromeDir = await win.electronAPI.dbFindOne({ name: "chromePath" });
   if (chromeDir) {
-    chromePath.value = chromeDir;
+    chromePath.value = chromeDir.value;
   } else {
     ElMessage.error("请在设置中配置浏览器路径");
     return;
@@ -226,6 +230,7 @@ const onSubmit = () => {
   getInfo()
     .then((cookie) => {
       authHandle(cookie);
+      loading.value = false;
     })
     .catch((err) => {
       loading.value = false;
@@ -235,36 +240,45 @@ const onSubmit = () => {
 
 <template>
   <h1>{{ msg }}</h1>
-  <el-form :inline="true" :model="formInline" class="demo-form-inline">
-    <el-form-item label="帐号">
-      <el-input v-model="formInline.account" placeholder="请输入帐号" />
-    </el-form-item>
-    <el-form-item label="网站">
-      <el-select v-model="formInline.website" placeholder="请选择网站">
-        <el-option label="Amazon" value="amazon" />
-        <el-option label="Freecharge" value="freecharge" />
-      </el-select>
-    </el-form-item>
-    <el-form-item>
-      <el-button type="primary" @click="onSubmit" :loading="loading"
-        >查询</el-button
-      >
-    </el-form-item>
-  </el-form>
-  <p>记录<br /></p>
-  <div class="box">
-    <el-table :data="tableData" border style="width: 600px">
-      <el-table-column prop="date" label="帐号" width="300" />
-      <el-table-column prop="name" label="状态" width="300" />
-    </el-table>
+  <div class="demo-form-inline">
+    <el-form :inline="false" :model="formInline" class="form">
+      <el-form-item label="帐号">
+        <el-input v-model="formInline.account" placeholder="请输入帐号" />
+      </el-form-item>
+      <el-form-item label="网站">
+        <el-select v-model="formInline.website" placeholder="请选择网站">
+          <el-option label="Amazon" value="amazon" />
+          <!-- <el-option label="Freecharge" value="freecharge" /> -->
+        </el-select>
+      </el-form-item>
+      <el-form-item>
+        <el-button type="primary" @click="onSubmit" :loading="loading"
+          >查询</el-button
+        >
+      </el-form-item>
+    </el-form>
   </div>
+
+  <p>记录<br /></p>
 </template>
 
 <style scoped>
 a {
   color: #42b983;
 }
-
+.demo-form-inline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.form {
+  width: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
 label {
   margin: 0 0.5em;
   font-weight: bold;
