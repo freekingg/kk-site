@@ -4,8 +4,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   ipcRenderer: ipcRenderer,
   openDirectory: (title) => ipcRenderer.send('open-directory', title),
   onSelectDir: (callback) => ipcRenderer.on('selectedDir', callback),
-  storeSetItem: (data) => {},
-  storeGetItem: (key) => {},
   dbFindOne: (query:any) => ipcRenderer.invoke('db:findOne',query),
   dbFindAll: (query:any) => ipcRenderer.invoke('db:findAll',query),
   dbInsert: (query:any) => ipcRenderer.invoke('db:insert',query),

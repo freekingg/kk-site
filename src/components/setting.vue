@@ -1,21 +1,13 @@
 <script setup lang="ts">
-import axios from "axios";
 import { ref, reactive, onMounted } from "vue";
 import { ElMessage } from "element-plus";
 const win: any = window;
-defineProps<{ msg: string; chromePath: string }>();
-
-const count = ref(0);
 
 const formInline = reactive({
   path: "",
 });
 
 onMounted(async () => {
-  win.electronAPI.onSelectDir((c: any, value: string) => {
-    formInline.path = value;
-    win.electronAPI.storeSetItem({ key: "chromePath", value });
-  });
   const chromeDir = await win.electronAPI.dbFindOne({ name: "chromePath" });
   if (chromeDir) {
     formInline.path = chromeDir.value;

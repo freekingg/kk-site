@@ -38,7 +38,20 @@ const auth = async (ctx) => {
     width: 1400,
     height: 700,
   });
-  await page.goto(url, { timeout: 0, waitUntil:'networkidle2' });
+  const headers = {
+    "Accept-Encoding": "gzip",
+  };
+
+  await page.setRequestInterception(true);
+  page.on("request", (req) => {
+    if (["image", "font"].includes(req.resourceType())) {
+      return request.abort();
+    }
+    return request.continue();
+  });
+
+  await page.setExtraHTTPHeaders(headers);
+  await page.goto(url, { timeout: 0, waitUntil: "networkidle2" });
 
   await page.evaluate((account) => {
     document.title = account;
@@ -57,10 +70,10 @@ const auth = async (ctx) => {
   console.log("已经登陆成功");
   const cookies = await page.cookies();
   setTimeout(() => {
-    browser.close()
+    browser.close();
   }, 15000);
   await page.evaluate((account) => {
-    alert(`${account}：已经验证成功`)
+    alert(`${account}：已经验证成功`);
     return Promise.resolve();
   }, account);
   ctx.body = { cookies: cookies, account };
@@ -96,12 +109,24 @@ const records = async (ctx) => {
     width: 1400,
     height: 700,
   });
-  await page.goto(url, { timeout: 0, waitUntil:'networkidle2' });
+  const headers = {
+    "Accept-Encoding": "gzip",
+  };
+  await page.setExtraHTTPHeaders(headers);
+  await page.setRequestInterception(true);
+  page.on("request", (request) => {
+    if (["image", "font"].includes(request.resourceType())) {
+      return request.abort();
+    }
+    return request.continue();
+  });
+
+  await page.goto(url, { timeout: 0, waitUntil: "networkidle2" });
   await page.setCookie(...cookie);
 
   // 刷新页面，验证登录状态
   await page.reload({ waitUntil: "networkidle2" });
-  await page.goto(url, { timeout: 0, waitUntil:'networkidle2' });
+  await page.goto(url, { timeout: 0, waitUntil: "networkidle2" });
   console.log("已经登陆成功");
 
   const cookies = await page.cookies();

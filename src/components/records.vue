@@ -5,7 +5,6 @@ import { ElMessage } from "element-plus";
 import Config from "../config/index";
 import Api from "../api/index";
 const win: any = window;
-defineProps<{ msg: string; chromePath: string }>();
 const chromePath = ref("");
 const getInfo = () => {
   return new Promise((resolve, reject) => {

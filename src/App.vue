@@ -7,10 +7,6 @@ import Help from "./components/help.vue";
 const win: any = window;
 const chromePath = ref("");
 onMounted(() => {
-  const chromeDir = win.electronAPI.storeGetItem("chromePath");
-  if (chromeDir) {
-    chromePath.value = chromeDir;
-  }
   win.electronAPI
     .dbFindAll({})
     .then((result: any) => {
