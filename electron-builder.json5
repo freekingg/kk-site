@@ -2,14 +2,15 @@
  * @see https://www.electron.build/configuration/configuration
  */
 {
-  "appId": "YourAppID",
+  "appId": "kkWeb",
   "asar": true,
   "directories": {
     "output": "release/${version}"
   },
   "files": [
     "dist-electron",
-    "dist"
+    "dist",
+    "server"
   ],
   "mac": {
     "artifactName": "${productName}_${version}.${ext}",
@@ -19,13 +20,9 @@
   },
   "win": {
     "target": [
-      {
-        "target": "nsis",
-        "arch": [
-          "x64"
-        ]
-      }
-    ],
+        "nsis",
+        "zip"
+      ],
     "artifactName": "${productName}_${version}.${ext}"
   },
   "nsis": {
