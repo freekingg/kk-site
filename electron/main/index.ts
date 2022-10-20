@@ -12,7 +12,7 @@ process.env.DIST_ELECTRON = join(__dirname, '..')
 process.env.DIST = join(process.env.DIST_ELECTRON, '../dist')
 process.env.PUBLIC = app.isPackaged ? process.env.DIST : join(process.env.DIST_ELECTRON, '../public')
 
-import { app, BrowserWindow, shell, ipcMain,dialog } from 'electron'
+import { app, BrowserWindow, shell, ipcMain,dialog,Menu } from 'electron'
 import { release } from 'os'
 import { join } from 'path'
 import { ChildProcess, fork } from 'child_process'
@@ -50,6 +50,7 @@ let win: BrowserWindow | null = null
 const preload = join(__dirname, '../preload/index.js')
 const url = process.env.VITE_DEV_SERVER_URL
 const indexHtml = join(process.env.DIST, 'index.html')
+Menu.setApplicationMenu(null);
 
 async function createWindow() {
   createServerProcess()
