@@ -35,7 +35,7 @@ const auth = async (ctx) => {
   });
   const page = await browser.newPage();
   await page.setViewport({
-    width: 1920,
+    width: 1400,
     height: 700,
   });
   await page.goto(url, { timeout: 0, waitUntil:'networkidle2' });
@@ -59,7 +59,10 @@ const auth = async (ctx) => {
   setTimeout(() => {
     browser.close()
   }, 15000);
-  console.log("获取cookie: ", cookies);
+  await page.evaluate((account) => {
+    alert(`${account}：已经验证成功`)
+    return Promise.resolve();
+  }, account);
   ctx.body = { cookies: cookies, account };
 };
 
@@ -90,7 +93,7 @@ const records = async (ctx) => {
   });
   const page = await browser.newPage();
   await page.setViewport({
-    width: 1920,
+    width: 1400,
     height: 700,
   });
   await page.goto(url, { timeout: 0, waitUntil:'networkidle2' });

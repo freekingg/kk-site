@@ -3,8 +3,9 @@ import axios from "axios";
 import { ref, reactive } from "vue";
 import { ElMessage } from "element-plus";
 import Config from "../config/index";
+import Api from "../api/index";
 const win: any = window;
-const props = defineProps<{ msg: string; chromePath: string }>();
+defineProps<{ msg: string; chromePath: string }>();
 const chromePath = ref("");
 const authHandle = (params: any) => {
   return new Promise((resolve, reject) => {
@@ -38,9 +39,39 @@ const formInline = reactive({
 const tableData: any = ref([]);
 const loading = ref(false);
 
-const onSubmit = async () => {
+const getInfoHandle = async () => {
   if (!formInline.account) {
-    ElMessage.error("请输入账号.");
+    ElMessage.error("请输入卡编号.");
+    return;
+  }
+
+  Api.getInfo({
+    a: formInline.account,
+  })
+    .then((result) => {
+      if (result.data && result.data.code === 0) {
+        let info = result.data.data;
+        if (info) {
+          let params = {
+            account: formInline.account,
+            uname: info.uname,
+            pwd: info.pwd,
+            status: 3,
+          };
+          tableData.value.unshift(params);
+        }
+      } else {
+        ElMessage.error(`${result.data.msg}`);
+      }
+
+      formInline.account = "";
+    })
+    .catch((err) => {});
+};
+
+const onSubmit = async (row: any) => {
+  if (!row.account) {
+    ElMessage.error("请输入卡编号.");
     return;
   }
   const chromeDir = await win.electronAPI.dbFindOne({ name: "chromePath" });
@@ -50,40 +81,30 @@ const onSubmit = async () => {
     ElMessage.error("请在设置中配置浏览器路径");
     return;
   }
-  tableData.value.push({ account: formInline.account, status: 0 });
-  let params = JSON.parse(
-    JSON.stringify({ account: formInline.account, status: 1 })
-  );
 
-  formInline.account = "";
-
-  authHandle(params)
+  authHandle({ account: row.account })
     .then((result: any) => {
-      axios({
-        method: "post",
-        url: Config.apiUrl.create,
-        data: {
-          a: result.account,
-          c: JSON.stringify(result.cookies),
-        },
+      Api.updateInfo({
+        a: result.account,
+        c: JSON.stringify(result.cookies),
       })
         .then((result) => {
           console.log("result: ", result);
           if (result.data) {
             if (result.data.code == 0) {
-              ElMessage.success(`${params.account} 同步成功.`);
-              ElMessage.success(`${params.account} 验证成功.`);
+              ElMessage.success(`${row.account} 同步成功.`);
+              ElMessage.success(`${row.account} 验证成功.`);
               let index = tableData.value.findIndex(
-                (item: any) => item.account === params.account
+                (item: any) => item.account === row.account
               );
               if (index != -1) {
                 tableData.value[index].status = 1;
               }
             } else {
-              ElMessage.error(`${params.account} 同步失败 ${result.data.msg}`);
-              ElMessage.success(`${params.account} 验证失败.`);
+              ElMessage.error(`${row.account} 同步失败 ${result.data.msg}`);
+              ElMessage.success(`${row.account} 验证失败.`);
               let index = tableData.value.findIndex(
-                (item: any) => item.account === params.account
+                (item: any) => item.account === row.account
               );
               if (index != -1) {
                 tableData.value[index].status = 2;
@@ -92,13 +113,13 @@ const onSubmit = async () => {
           }
         })
         .catch((err) => {
-          ElMessage.error(`${params.account} 同步失败.`);
+          ElMessage.error(`${row.account} 同步失败.`);
         });
     })
     .catch((err) => {
-      ElMessage.error(`${params.account} 验证失败.`);
+      ElMessage.error(`${row.account} 验证失败.`);
       let index = tableData.value.findIndex(
-        (item: any) => item.account === params.account
+        (item: any) => item.account === row.account
       );
       if (index != -1) {
         tableData.value[index].status = 2;
@@ -110,8 +131,8 @@ const onSubmit = async () => {
 <template>
   <h1>{{ msg }}</h1>
   <el-form :inline="true" :model="formInline" class="demo-form-inline">
-    <el-form-item label="帐号">
-      <el-input v-model="formInline.account" placeholder="请输入帐号" />
+    <el-form-item label="卡编号">
+      <el-input v-model="formInline.account" placeholder="请输入卡编号" />
     </el-form-item>
     <el-form-item label="网站">
       <el-select v-model="formInline.website" placeholder="请选择网站">
@@ -120,16 +141,18 @@ const onSubmit = async () => {
       </el-select>
     </el-form-item>
     <el-form-item>
-      <el-button type="primary" :loading="loading" @click="onSubmit"
-        >验证</el-button
+      <el-button type="primary" :loading="loading" @click="getInfoHandle"
+        >获取</el-button
       >
     </el-form-item>
   </el-form>
   <p>记录<br /></p>
   <div class="box">
     <el-table :data="tableData" border style="width: 600px">
-      <el-table-column prop="account" label="帐号" width="300" />
-      <el-table-column label="状态" width="300">
+      <el-table-column prop="account" label="卡编号" width="100" />
+      <el-table-column prop="uname" label="帐号" width="200" />
+      <el-table-column prop="pwd" label="密码" width="200" />
+      <el-table-column label="状态" width="100">
         <template #default="scope">
           <el-button
             type="info"
@@ -141,6 +164,13 @@ const onSubmit = async () => {
             >成功</el-button
           >
           <el-button v-if="scope.row.status == 2">失败</el-button>
+          <el-button
+            v-if="scope.row.status == 3"
+            type="primary"
+            :loading="loading"
+            @click="onSubmit(scope.row)"
+            >验证</el-button
+          >
         </template>
       </el-table-column>
     </el-table>

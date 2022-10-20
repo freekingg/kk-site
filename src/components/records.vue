@@ -3,32 +3,28 @@ import axios from "axios";
 import { ref, reactive } from "vue";
 import { ElMessage } from "element-plus";
 import Config from "../config/index";
+import Api from "../api/index";
 const win: any = window;
 defineProps<{ msg: string; chromePath: string }>();
 const chromePath = ref("");
 const getInfo = () => {
   return new Promise((resolve, reject) => {
-    axios({
-      method: "get",
-      url: Config.apiUrl.get,
-      params: {
-        a: formInline.account,
-      },
+    Api.getInfo({
+      a: formInline.account,
     })
       .then((result) => {
-        if (result.data) {
-          if (result.data.code == 0) {
-            if(result.data.data){
-              resolve(result.data.data);
-            }else{
-              ElMessage.error(`此帐号还未验证，请先去验证`);
+          if (result.data && result.data.code == 0) {
+            let info = result.data.data;
+            if (info && info.c) {
+              resolve(info.c);
+            } else {
+              ElMessage.error(`此卡编号还未验证，请先去验证`);
               reject();
             }
           } else {
             ElMessage.error(`${formInline.account} ${result.data.msg}`);
             reject();
           }
-        }
       })
       .catch((err) => {
         console.log("err: ", err);
@@ -215,7 +211,7 @@ const loading = ref(false);
 
 const onSubmit = async () => {
   if (!formInline.account) {
-    ElMessage.error("请输入账号.");
+    ElMessage.error("请输入卡编号.");
     return;
   }
   const chromeDir = await win.electronAPI.dbFindOne({ name: "chromePath" });
@@ -241,8 +237,8 @@ const onSubmit = async () => {
 <template>
   <h1>{{ msg }}</h1>
   <div class="demo-form-inline">
-    <el-form :inline="false" :model="formInline" class="form">
-      <el-form-item label="帐号">
+    <el-form :inline="false" :model="formInline" label-width="60px" class="form">
+      <el-form-item label="卡编号">
         <el-input v-model="formInline.account" placeholder="请输入帐号" />
       </el-form-item>
       <el-form-item label="网站">
@@ -259,7 +255,7 @@ const onSubmit = async () => {
     </el-form>
   </div>
 
-  <p>记录<br /></p>
+  <!-- <p>记录<br /></p> -->
 </template>
 
 <style scoped>
