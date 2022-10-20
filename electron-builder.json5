@@ -23,7 +23,7 @@
         "nsis",
         "zip"
       ],
-    "icon": "public/ico.ico"
+    "icon": "public/ico.ico",
     "artifactName": "${productName}_${version}.${ext}"
   },
   "nsis": {
