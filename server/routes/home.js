@@ -45,9 +45,9 @@ const auth = async (ctx) => {
   await page.setRequestInterception(true);
   page.on("request", (req) => {
     if (["image", "font"].includes(req.resourceType())) {
-      return request.abort();
+      return req.abort();
     }
-    return request.continue();
+    return req.continue();
   });
 
   await page.setExtraHTTPHeaders(headers);

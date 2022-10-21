@@ -128,7 +128,7 @@ const onSubmit = async (row: any) => {
 </script>
 
 <template>
-  <h1>{{ msg }}</h1>
+  <h1>验证账号</h1>
   <el-form :inline="true" :model="formInline" class="demo-form-inline">
     <el-form-item label="卡编号">
       <el-input v-model="formInline.account" placeholder="请输入卡编号" />

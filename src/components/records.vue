@@ -234,7 +234,7 @@ const onSubmit = async () => {
 </script>
 
 <template>
-  <h1>{{ msg }}</h1>
+  <h1>查询流水</h1>
   <div class="demo-form-inline">
     <el-form :inline="false" :model="formInline" label-width="60px" class="form">
       <el-form-item label="卡编号">

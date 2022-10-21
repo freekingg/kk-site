@@ -39,7 +39,7 @@ const onSubmit = () => {
 </script>
 
 <template>
-  <h1>{{ msg }}</h1>
+  <h1>配置</h1>
   <el-form :inline="true" :model="formInline" class="demo-form-inline">
     <el-form-item label="浏览器路径">
       <el-input
