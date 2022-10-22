@@ -13,6 +13,7 @@ const auth = (ctx) => {
         executablePath:
           chromePath ||
           '"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"',
+          ignoreDefaultArgs:['--enable-automation'],
         args: [
           "--disable-gpu",
           "--disable-dev-shm-usage",
@@ -89,6 +90,7 @@ const records = (ctx) => {
         executablePath:
           chromePath ||
           "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+          ignoreDefaultArgs:['--enable-automation'],
         args: [
           "--disable-gpu",
           "--disable-dev-shm-usage",
