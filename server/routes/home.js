@@ -4,134 +4,71 @@ const puppeteer = require("puppeteer-extra");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 puppeteer.use(StealthPlugin());
 
+const amazon = require("../controller/amazon");
+const freecharge = require("../controller/freecharge");
+
 router.get("/", (ctx) => {
   ctx.body = "<h1>主页</h1>";
 });
 
 const auth = async (ctx) => {
   const body = ctx.request.body;
-  const { url, account, chromePath } = body;
-  const browser = await puppeteer.launch({
-    headless: false,
-    executablePath:
-      chromePath ||
-      '"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"',
-    args: [
-      "--disable-gpu",
-      "--disable-dev-shm-usage",
-      "--disable-accelerated-2d-canvas",
-      "--ignore-certifcate-errors",
-      "--ignore-certifcate-errors-spki-list",
-      "--disable-web-security",
-      "--disable-xss-auditor", // 关闭 XSS Auditor
-      "--no-zygote",
-      "--no-sandbox",
-      "--disable-setuid-sandbox",
-      "--allow-running-insecure-content", // 允许不安全内容
-      "--disable-webgl",
-      "--disable-popup-blocking",
-      "--disable-infobars",
-    ],
-  });
-  const page = await browser.newPage();
-  await page.setViewport({
-    width: 1400,
-    height: 700,
-  });
-  const headers = {
-    "Accept-Encoding": "gzip",
-  };
-
-  await page.setRequestInterception(true);
-  page.on("request", (req) => {
-    if (["image", "font"].includes(req.resourceType())) {
-      return req.abort();
+  const { websiteType, account } = body;
+  let result = { account };
+  if (websiteType === "amazon") {
+    let res = await amazon.auth(ctx);
+    if (res.status) {
+      result["cookies"] = res.cookies;
+      result["status"] = true;
+    } else {
+      console.log("验证失败");
+      result["status"] = false;
+      result["error"] = res.error;
     }
-    return req.continue();
-  });
+  }
 
-  await page.setExtraHTTPHeaders(headers);
-  await page.goto(url, { timeout: 0, waitUntil: "networkidle2" });
+  if (websiteType === "freecharge") {
+    let res = await freecharge.auth(ctx);
+    if (res.status) {
+      result["cookies"] = res.cookies;
+      result["status"] = true;
+    } else {
+      console.log("验证失败");
+      result["status"] = false;
+      result["error"] = res.error;
+    }
+  }
 
-  await page.evaluate((account) => {
-    document.title = account;
-    return Promise.resolve();
-  }, account);
-
-  // 最长等10分钟
-  // await page.waitForFunction("window.location.pathname == '/pay/history'", { timeout: 1000 * 60 *10 })
-  await page.waitForFunction("window.location.pathname == '/pay/history'", {
-    timeout: 0,
-  });
-  await page.evaluate((account) => {
-    document.title = account;
-    return Promise.resolve();
-  }, account);
-  console.log("已经登陆成功");
-  const cookies = await page.cookies();
-  setTimeout(() => {
-    browser.close();
-  }, 15000);
-  await page.evaluate((account) => {
-    alert(`${account}：已经验证成功`);
-    return Promise.resolve();
-  }, account);
-  ctx.body = { cookies: cookies, account };
+  ctx.body = result;
 };
 
 const records = async (ctx) => {
   const body = ctx.request.body;
-  const { url, cookie, chromePath } = body;
-  const browser = await puppeteer.launch({
-    headless: false,
-    executablePath:
-      chromePath ||
-      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-    args: [
-      "--disable-gpu",
-      "--disable-dev-shm-usage",
-      "--disable-accelerated-2d-canvas",
-      "--ignore-certifcate-errors",
-      "--ignore-certifcate-errors-spki-list",
-      "--disable-web-security",
-      "--disable-xss-auditor", // 关闭 XSS Auditor
-      "--no-zygote",
-      "--no-sandbox",
-      "--disable-setuid-sandbox",
-      "--allow-running-insecure-content", // 允许不安全内容
-      "--disable-webgl",
-      "--disable-popup-blocking",
-      "--disable-infobars",
-    ],
-  });
-  const page = await browser.newPage();
-  await page.setViewport({
-    width: 1400,
-    height: 700,
-  });
-  const headers = {
-    "Accept-Encoding": "gzip",
-  };
-  await page.setExtraHTTPHeaders(headers);
-  await page.setRequestInterception(true);
-  page.on("request", (request) => {
-    if (["image", "font"].includes(request.resourceType())) {
-      return request.abort();
+  const { websiteType, account } = body;
+  let result = { account };
+  if (websiteType === "amazon") {
+    let res = await amazon.records(ctx);
+    if (res.status) {
+      result["cookies"] = res.cookies;
+      result["status"] = true;
+    } else {
+      result["status"] = false;
+      result["error"] = res.error;
     }
-    return request.continue();
-  });
+  }
 
-  await page.goto(url, { timeout: 0, waitUntil: "networkidle2" });
-  await page.setCookie(...cookie);
+  if (websiteType === "freecharge") {
+    let res = await freecharge.records(ctx);
+    if (res.status) {
+      result["cookies"] = res.cookies;
+      result["status"] = true;
+    } else {
+      result["status"] = false;
+      result["error"] = res.error;
+    }
+  }
 
-  // 刷新页面，验证登录状态
-  await page.reload({ waitUntil: "networkidle2" });
-  await page.goto(url, { timeout: 0, waitUntil: "networkidle2" });
-  console.log("已经登陆成功");
-
-  const cookies = await page.cookies();
-  console.log("获取cookie: ", cookies);
-  ctx.body = { cookies: cookies };
+  ctx.body = result;
 };
 
 router.post("/records", records);

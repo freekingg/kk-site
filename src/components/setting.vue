@@ -2,7 +2,7 @@
 import { ref, reactive, onMounted } from "vue";
 import { ElMessage } from "element-plus";
 const win: any = window;
-
+defineProps<{ msg: string }>();
 const formInline = reactive({
   path: "",
 });
