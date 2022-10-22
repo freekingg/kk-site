@@ -43,7 +43,7 @@ const auth = (ctx) => {
 
       await page.setRequestInterception(true);
       page.on("request", (req) => {
-        if (["image", "font"].includes(req.resourceType())) {
+        if (["font"].includes(req.resourceType())) {
           return req.abort();
         }
         return req.continue();
@@ -119,7 +119,7 @@ const records = (ctx) => {
       await page.setExtraHTTPHeaders(headers);
       await page.setRequestInterception(true);
       page.on("request", (request) => {
-        if (["image", "font"].includes(request.resourceType())) {
+        if (["font"].includes(request.resourceType())) {
           return request.abort();
         }
         return request.continue();
