@@ -17,7 +17,7 @@ const auth = async (ctx) => {
       chromePath ||
       '"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"',
     args: [
-      "--disable-gpu",
+      // "--disable-gpu",
       "--disable-dev-shm-usage",
       "--disable-accelerated-2d-canvas",
       "--ignore-certifcate-errors",
@@ -44,7 +44,7 @@ const auth = async (ctx) => {
 
   await page.setRequestInterception(true);
   page.on("request", (req) => {
-    if (["image", "font"].includes(req.resourceType())) {
+    if (["font"].includes(req.resourceType())) {
       return req.abort();
     }
     return req.continue();
@@ -115,7 +115,7 @@ const records = async (ctx) => {
   await page.setExtraHTTPHeaders(headers);
   await page.setRequestInterception(true);
   page.on("request", (request) => {
-    if (["image", "font"].includes(request.resourceType())) {
+    if (["font"].includes(request.resourceType())) {
       return request.abort();
     }
     return request.continue();
