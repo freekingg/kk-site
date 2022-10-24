@@ -11,11 +11,12 @@ router.get("/", (ctx) => {
   ctx.body = "<h1>主页</h1>";
 });
 
+// 25 amazon   32 freecharge
 const auth = async (ctx) => {
   const body = ctx.request.body;
-  const { websiteType, account } = body;
+  const { type, account } = body;
   let result = { account };
-  if (websiteType === "amazon") {
+  if (type === 25) {
     let res = await amazon.auth(ctx);
     if (res.status) {
       result["cookies"] = res.cookies;
@@ -27,7 +28,7 @@ const auth = async (ctx) => {
     }
   }
 
-  if (websiteType === "freecharge") {
+  if (type === 32) {
     let res = await freecharge.auth(ctx);
     if (res.status) {
       result["cookies"] = res.cookies;
@@ -44,9 +45,9 @@ const auth = async (ctx) => {
 
 const records = async (ctx) => {
   const body = ctx.request.body;
-  const { websiteType, account } = body;
+  const { type, account } = body;
   let result = { account };
-  if (websiteType === "amazon") {
+  if (type === 25) {
     let res = await amazon.records(ctx);
     if (res.status) {
       result["cookies"] = res.cookies;
@@ -57,7 +58,7 @@ const records = async (ctx) => {
     }
   }
 
-  if (websiteType === "freecharge") {
+  if (type === 32) {
     let res = await freecharge.records(ctx);
     if (res.status) {
       result["cookies"] = res.cookies;

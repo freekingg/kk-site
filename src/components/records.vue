@@ -37,10 +37,10 @@ const getInfoHandle = () => {
 const authHandle = async (data: any) => {
   const params = {
     chromePath: chromePath.value,
-    url: Config.websiteUrl[data.websiteType],
+    url: Config.websiteUrl[data.type],
     account: data.account,
     cookie: JSON.parse(data.c),
-    websiteType: data.websiteType,
+    type: data.type,
   };
 
   try {
@@ -77,8 +77,7 @@ const onSubmit = async () => {
   loading.value = true;
   getInfoHandle().then((data: any) => {
     const params = {
-      ...data,
-      websiteType: data.websiteType || "amazon",
+      ...data
     };
     authHandle(params);
   });

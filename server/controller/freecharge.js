@@ -56,7 +56,8 @@ const auth = (ctx) => {
         return Promise.resolve();
       }, account);
 
-      await page.waitFor(".profile-name", { timeout: 0 });
+      console.log('profile-name')
+      await page.waitForSelector(".profile-name", { timeout: 0 });
       // await page.waitForFunction("window.location.pathname == '/pay/history'", {
       //   timeout: 0,
       // });
@@ -75,6 +76,7 @@ const auth = (ctx) => {
       }, account);
       resolve({ status: true, cookies });
     } catch (error) {
+      console.log('error: ', error);
       resolve({ status: false, error });
     }
   });

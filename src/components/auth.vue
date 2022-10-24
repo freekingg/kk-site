@@ -40,7 +40,8 @@ const getInfoHandle = async () => {
             uname: info.uname,
             pwd: info.pwd,
             status: 3,
-            websiteType: info.websiteType || "amazon",
+            type: info.type || 25,
+            upi: info.upi || '',
           };
           tableData.value.unshift(params);
           formInline.account = "";
@@ -51,7 +52,7 @@ const getInfoHandle = async () => {
           uname: info.uname,
           pwd: info.pwd,
           status: 3,
-          websiteType: info.websiteType || "amazon",
+          type: info.type,
         };
         tableData.value.unshift(params);
         formInline.account = "";
@@ -70,9 +71,9 @@ const authHandle = (data: any) => {
   return new Promise(async (resolve, reject) => {
     const params = {
       chromePath: chromePath.value,
-      url: Config.websiteUrl[data.websiteType],
+      url: Config.websiteUrl[data.type],
       account: data.account,
-      websiteType: data.websiteType,
+      type: data.type,
     };
 
     try {
@@ -96,6 +97,7 @@ const authHandle = (data: any) => {
 };
 
 const onSubmit = async (row: any) => {
+  console.log('row: ', row);
   if (!row.account) {
     ElMessage.error("请输入卡编号.");
     return;
@@ -110,7 +112,8 @@ const onSubmit = async (row: any) => {
 
   const params = {
     account: row.account,
-    websiteType: row.websiteType,
+    type: row.type,
+    upi: row.upi,
   };
 
   try {
@@ -143,6 +146,7 @@ const onSubmit = async (row: any) => {
         }
       })
       .catch((err) => {
+        console.log('err: ', err);
         ElMessage.error(`${row.account} 同步失败.${err.message}`);
       });
   } catch (err: any) {
@@ -174,8 +178,9 @@ const onSubmit = async (row: any) => {
   <div class="box">
     <el-table :data="tableData" border style="width: 600px">
       <el-table-column prop="account" label="卡编号" width="100" />
-      <el-table-column prop="uname" label="帐号" width="200" />
-      <el-table-column prop="pwd" label="密码" width="200" />
+      <el-table-column prop="uname" label="帐号" width="125" />
+      <el-table-column prop="pwd" label="密码" width="125" />
+      <el-table-column prop="upi" label="upi" width="150" />
       <el-table-column label="状态" width="100">
         <template #default="scope">
           <el-button
