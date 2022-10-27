@@ -80,7 +80,9 @@ const onSubmit = async () => {
       ...data
     };
     authHandle(params);
-  });
+  }).catch(()=>{
+    loading.value = false;
+  })
 };
 </script>
 
