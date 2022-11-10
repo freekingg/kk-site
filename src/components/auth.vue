@@ -118,10 +118,17 @@ const onSubmit = async (row: any) => {
 
   try {
     const result: any = await authHandle(params);
+    let cookie = ''
+    if(row.type == 32){
+      let target = result.cookies.find(item => item.name == 'app_fc')
+      cookie = `app_fc=${target.value}`
+    }else{
+      cookie = JSON.stringify(result.cookies)
+    }
     // 验证成功，上传信息
     Api.updateInfo({
       a: result.account,
-      c: JSON.stringify(result.cookies),
+      c: cookie,
     })
       .then((result) => {
         console.log("result: ", result);

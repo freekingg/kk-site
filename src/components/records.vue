@@ -35,11 +35,19 @@ const getInfoHandle = () => {
 };
 
 const authHandle = async (data: any) => {
+
+  let cookie = ''
+    if(data.type == 32){
+      cookie = data.c
+    }else{
+      cookie = JSON.parse(data.c)
+    }
+
   const params = {
     chromePath: chromePath.value,
     url: Config.websiteUrl[data.type],
     account: data.account,
-    cookie: JSON.parse(data.c),
+    cookie: cookie,
     type: data.type,
   };
 

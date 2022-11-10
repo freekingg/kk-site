@@ -85,6 +85,18 @@ const auth = (ctx) => {
 const records = (ctx) => {
   const body = ctx.request.body;
   const { url, cookie, chromePath } = body;
+  let c = cookie.split('=')
+  let newCookie = [
+      {
+        "domain": ".freecharge.in",
+        "name": "app_fc",
+        "path": "/",
+        "secure": true,
+        "session": false,
+        "storeId": null,
+        "value": c[1]
+    }
+  ]
   return new Promise(async (resolve, reject) => {
     try {
       const browser = await puppeteer.launch({
@@ -128,7 +140,7 @@ const records = (ctx) => {
       });
 
       await page.goto(url, { timeout: 0, waitUntil: "networkidle2" });
-      await page.setCookie(...cookie);
+      await page.setCookie(...newCookie);
 
       // 刷新页面，验证登录状态
       await page.reload({ waitUntil: "networkidle2" });
