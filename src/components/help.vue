@@ -4,6 +4,7 @@ import { ref, reactive } from "vue";
 import { ElMessage } from "element-plus";
 import Config from "../config/index";
 const win: any = window;
+defineProps<{ msg: string }>();
 const chromePath = ref("");
 
 const formInline = reactive({

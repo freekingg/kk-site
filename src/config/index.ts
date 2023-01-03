@@ -4,4 +4,10 @@ const apiUrl: any = {
   // base: "https://localhost:80",
 };
 const serverUrl: any = 'http://localhost:3005';
-export default { apiUrl,serverUrl };
+
+// 25 amazon   32 freecharge
+const websiteUrl: any = {
+  25:'https://www.amazon.in/',
+  32:'https://www.freecharge.in/',
+}
+export default { apiUrl,serverUrl,websiteUrl };

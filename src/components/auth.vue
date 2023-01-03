@@ -1,38 +1,15 @@
 <script setup lang="ts">
 import axios from "axios";
 import { ref, reactive } from "vue";
-import { ElMessage } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 import Config from "../config/index";
 import Api from "../api/index";
 const win: any = window;
+defineProps<{ msg: string }>();
 const chromePath = ref("");
-const authHandle = (params: any) => {
-  return new Promise((resolve, reject) => {
-    axios({
-      method: "post",
-      url: `${Config.serverUrl}/auth`,
-      data: {
-        chromePath: chromePath.value,
-        url: "https://www.amazon.in/",
-        account: params.account,
-      },
-    })
-      .then((result) => {
-        loading.value = false;
-        console.log("result: ", params.account, result);
-        resolve(result.data);
-      })
-      .catch((err) => {
-        loading.value = false;
-        console.log("err: ", params.account, err);
-        reject(err);
-      });
-  });
-};
 
 const formInline = reactive({
   account: "",
-  website: "amazon",
 });
 
 const tableData: any = ref([]);
@@ -44,31 +21,83 @@ const getInfoHandle = async () => {
     return;
   }
 
-  Api.getInfo({
+  const params = {
     a: formInline.account,
-  })
-    .then((result) => {
-      if (result.data && result.data.code === 0) {
-        let info = result.data.data;
-        if (info) {
-          let params = {
+  };
+
+  try {
+    const result = await Api.getInfo(params);
+    if (result.data && result.data.code === 0) {
+      let info = result.data.data;
+      if (info) {
+        ElMessageBox.confirm("此帐号已经验证过,是否再次重新验证？", "Warning", {
+          confirmButtonText: "OK",
+          cancelButtonText: "Cancel",
+          type: "warning",
+        }).then(() => {
+          const params = {
             account: formInline.account,
             uname: info.uname,
             pwd: info.pwd,
             status: 3,
+            type: info.type || 25,
+            upi: info.upi || '',
           };
           tableData.value.unshift(params);
-        }
+          formInline.account = "";
+        });
       } else {
-        ElMessage.error(`${result.data.msg}`);
+        const params = {
+          account: formInline.account,
+          uname: info.uname,
+          pwd: info.pwd,
+          status: 3,
+          type: info.type,
+        };
+        tableData.value.unshift(params);
+        formInline.account = "";
       }
+     
+    } else {
+      ElMessage.error(`${result.data.msg}`);
+    }
+  } catch (err: any) {
+    ElMessage.error(`请求出错 ${err.message}`);
+    console.log("err: ", err);
+  }
+};
 
-      formInline.account = "";
-    })
-    .catch((err) => {});
+const authHandle = (data: any) => {
+  return new Promise(async (resolve, reject) => {
+    const params = {
+      chromePath: chromePath.value,
+      url: Config.websiteUrl[data.type],
+      account: data.account,
+      type: data.type,
+    };
+
+    try {
+      let result = await axios({
+        method: "post",
+        url: `${Config.serverUrl}/auth`,
+        data: params,
+      });
+      loading.value = false;
+      if (result.data.status) {
+        resolve(result.data);
+      } else {
+        reject(result.data.error);
+      }
+    } catch (error) {
+      loading.value = false;
+      console.log("err: ", params.account, error);
+      reject(error);
+    }
+  });
 };
 
 const onSubmit = async (row: any) => {
+  console.log('row: ', row);
   if (!row.account) {
     ElMessage.error("请输入卡编号.");
     return;
@@ -81,49 +110,62 @@ const onSubmit = async (row: any) => {
     return;
   }
 
-  authHandle({ account: row.account })
-    .then((result: any) => {
-      Api.updateInfo({
-        a: result.account,
-        c: JSON.stringify(result.cookies),
-      })
-        .then((result) => {
-          console.log("result: ", result);
-          if (result.data) {
-            if (result.data.code == 0) {
-              ElMessage.success(`${row.account} 同步成功.`);
-              ElMessage.success(`${row.account} 验证成功.`);
-              let index = tableData.value.findIndex(
-                (item: any) => item.account === row.account
-              );
-              if (index != -1) {
-                tableData.value[index].status = 1;
-              }
-            } else {
-              ElMessage.error(`${row.account} 同步失败 ${result.data.msg}`);
-              ElMessage.success(`${row.account} 验证失败.`);
-              let index = tableData.value.findIndex(
-                (item: any) => item.account === row.account
-              );
-              if (index != -1) {
-                tableData.value[index].status = 2;
-              }
+  const params = {
+    account: row.account,
+    type: row.type,
+    upi: row.upi,
+  };
+
+  try {
+    const result: any = await authHandle(params);
+    let cookie = ''
+    if(row.type == 32){
+      let target = result.cookies.find((item:any) => item.name == 'app_fc')
+      cookie = `app_fc=${target.value}`
+    }else{
+      cookie = JSON.stringify(result.cookies)
+    }
+    // 验证成功，上传信息
+    Api.updateInfo({
+      a: result.account,
+      c: cookie,
+    })
+      .then((result) => {
+        console.log("result: ", result);
+        if (result.data) {
+          if (result.data.code == 0) {
+            ElMessage.success(`${row.account} 验证成功.`);
+            let index = tableData.value.findIndex(
+              (item: any) => item.account === row.account
+            );
+            if (index != -1) {
+              tableData.value[index].status = 1;
+            }
+          } else {
+            ElMessage.error(`${row.account} 验证失败 ${result.data.msg || ''}`);
+            let index = tableData.value.findIndex(
+              (item: any) => item.account === row.account
+            );
+            if (index != -1) {
+              tableData.value[index].status = 2;
             }
           }
-        })
-        .catch((err) => {
-          ElMessage.error(`${row.account} 同步失败.`);
-        });
-    })
-    .catch((err) => {
-      ElMessage.error(`${row.account} 验证失败.`);
-      let index = tableData.value.findIndex(
-        (item: any) => item.account === row.account
-      );
-      if (index != -1) {
-        tableData.value[index].status = 2;
-      }
-    });
+        }
+      })
+      .catch((err) => {
+        console.log('err: ', err);
+        ElMessage.error(`${row.account} 同步失败.${err.message}`);
+      });
+  } catch (err: any) {
+    console.log("err: ", err);
+    ElMessage.error(`${row.account} 验证失败.${err.message || ''}`);
+    let index = tableData.value.findIndex(
+      (item: any) => item.account === row.account
+    );
+    if (index != -1) {
+      tableData.value[index].status = 2;
+    }
+  }
 };
 </script>
 
@@ -132,12 +174,6 @@ const onSubmit = async (row: any) => {
   <el-form :inline="true" :model="formInline" class="demo-form-inline">
     <el-form-item label="卡编号">
       <el-input v-model="formInline.account" placeholder="请输入卡编号" />
-    </el-form-item>
-    <el-form-item label="网站">
-      <el-select v-model="formInline.website" placeholder="请选择网站">
-        <el-option label="Amazon" value="amazon" />
-        <!-- <el-option label="Freecharge" value="freecharge" /> -->
-      </el-select>
     </el-form-item>
     <el-form-item>
       <el-button type="primary" :loading="loading" @click="getInfoHandle"
@@ -149,8 +185,9 @@ const onSubmit = async (row: any) => {
   <div class="box">
     <el-table :data="tableData" border style="width: 600px">
       <el-table-column prop="account" label="卡编号" width="100" />
-      <el-table-column prop="uname" label="帐号" width="200" />
-      <el-table-column prop="pwd" label="密码" width="200" />
+      <el-table-column prop="uname" label="帐号" width="125" />
+      <el-table-column prop="pwd" label="密码" width="125" />
+      <el-table-column prop="upi" label="upi" width="150" />
       <el-table-column label="状态" width="100">
         <template #default="scope">
           <el-button

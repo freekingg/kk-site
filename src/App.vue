@@ -5,7 +5,6 @@ import Records from "./components/records.vue";
 import Setting from "./components/setting.vue";
 import Help from "./components/help.vue";
 const win: any = window;
-const chromePath = ref("");
 onMounted(() => {
   win.electronAPI
     .dbFindAll({})
@@ -24,19 +23,19 @@ onMounted(() => {
       <div class="logo-box">
         <img class="logo vite" src="./assets/vite.svg" />
       </div>
-      <Auth :chromePath="chromePath" msg="账号验证" />
+      <Auth msg="账号验证" />
     </el-tab-pane>
     <el-tab-pane label="查询">
       <div class="logo-box">
         <img class="logo vite" src="./assets/vite.svg" />
       </div>
-      <Records :chromePath="chromePath" msg="流水查询" />
+      <Records msg="流水查询" />
     </el-tab-pane>
     <el-tab-pane label="配置">
       <div class="logo-box">
         <img class="logo vite" src="./assets/vite.svg" />
       </div>
-      <Setting :chromePath="chromePath" msg="配置" />
+      <Setting msg="配置" />
     </el-tab-pane>
     <el-tab-pane label="帮助">
       <Help msg="配置" />
