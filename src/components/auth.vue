@@ -120,7 +120,7 @@ const onSubmit = async (row: any) => {
     const result: any = await authHandle(params);
     let cookie = ''
     if(row.type == 32){
-      let target = result.cookies.find(item => item.name == 'app_fc')
+      let target = result.cookies.find((item:any) => item.name == 'app_fc')
       cookie = `app_fc=${target.value}`
     }else{
       cookie = JSON.stringify(result.cookies)
