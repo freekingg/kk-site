@@ -72,6 +72,36 @@ const records = async (ctx) => {
   ctx.body = result;
 };
 
+const download = async (ctx) => {
+  const body = ctx.request.body;
+  const { type, account } = body;
+  let result = { account };
+  if (type === 25) {
+    let res = await amazon.download(ctx);
+    if (res.status) {
+      result["cookies"] = res.cookies;
+      result["status"] = true;
+    } else {
+      result["status"] = false;
+      result["error"] = res.error;
+    }
+  }
+
+  if (type === 32) {
+    let res = await freecharge.records(ctx);
+    if (res.status) {
+      result["cookies"] = res.cookies;
+      result["status"] = true;
+    } else {
+      result["status"] = false;
+      result["error"] = res.error;
+    }
+  }
+
+  ctx.body = result;
+};
+
+router.post("/download", download);
 router.post("/records", records);
 router.post("/auth", auth);
 

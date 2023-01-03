@@ -2,6 +2,7 @@
 import { ref, reactive, onMounted } from "vue";
 import Auth from "./components/auth.vue";
 import Records from "./components/records.vue";
+import Download from "./components/download.vue";
 import Setting from "./components/setting.vue";
 import Help from "./components/help.vue";
 const win: any = window;
@@ -19,17 +20,23 @@ onMounted(() => {
 
 <template>
   <el-tabs tab-position="left" class="demo-tabs">
-    <el-tab-pane label="验证">
+    <el-tab-pane label="账号验证">
       <div class="logo-box">
         <img class="logo vite" src="./assets/vite.svg" />
       </div>
       <Auth msg="账号验证" />
     </el-tab-pane>
-    <el-tab-pane label="查询">
+    <el-tab-pane label="查询流水">
       <div class="logo-box">
         <img class="logo vite" src="./assets/vite.svg" />
       </div>
       <Records msg="流水查询" />
+    </el-tab-pane>
+    <el-tab-pane label="下载流水">
+      <div class="logo-box">
+        <img class="logo vite" src="./assets/vite.svg" />
+      </div>
+      <Download msg="下载流水" />
     </el-tab-pane>
     <el-tab-pane label="配置">
       <div class="logo-box">
