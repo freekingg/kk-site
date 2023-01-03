@@ -118,6 +118,16 @@ const onSubmit = async () => {
         >
       </el-form-item>
     </el-form>
+    <p class="box">
+    freecharge 流程 <br />
+    1、输入卡编号，点击启动 <br />
+    2、自动登录成功后,流水会自动下载，页面会显示下载进度 <br /> <br />
+
+    amazon 流程 <br />
+    1、输入卡编号，点击启动 <br />
+    2、等待amazon自动登陆成功后，手动点击到流水界面 Amazon Pay - Your Transactions <br />
+    3、此时会自动下载流水文件，下载完成后页面会有提示 <br /> <br />
+  </p>
   </div>
 
   <!-- <p>记录<br /></p> -->
@@ -153,7 +163,7 @@ code {
 }
 .box {
   width: 100%;
-  display: flex;
-  justify-content: center;
+  text-align: left;
 }
+
 </style>

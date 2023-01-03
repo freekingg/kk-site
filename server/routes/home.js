@@ -88,7 +88,7 @@ const download = async (ctx) => {
   }
 
   if (type === 32) {
-    let res = await freecharge.records(ctx);
+    let res = await freecharge.download(ctx);
     if (res.status) {
       result["cookies"] = res.cookies;
       result["status"] = true;
